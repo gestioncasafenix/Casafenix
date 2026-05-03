@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Casa Fénix</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    <meta name="theme-color" content="#6C9EFF">
+    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#6C9EFF">
+</head>
+<body>
+
+<div class="sidebar">
+  <img src="logo.png" class="logo">
+  <h2>Casa Fénix</h2>
+  <div class="menu">
+    <div class="menu-item active" onclick="cargarVista('hoy', this)">🏠 Hoy</div>
+    <div class="menu-item" onclick="cargarVista('evidencias', this)">📸 Registro</div>
+    <div class="menu-item" onclick="document.documentElement.setAttribute('data-theme', document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark')">🌓 Tema</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="header">
+    <h1 id="titulo">Gestión de Aseo</h1>
+    <div id="hora"></div>
+  </div>
+  <div id="mainContent"></div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

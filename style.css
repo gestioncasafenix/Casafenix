@@ -1,0 +1,24 @@
+:root { --bg: #f5f6fa; --card: white; --text: #2f3640; --accent: #6C9EFF; }
+[data-theme="dark"] { --bg: #1e272e; --card: #2f3640; --text: #f5f6fa; }
+
+body { margin: 0; font-family: 'Inter', sans-serif; display: flex; background: var(--bg); color: var(--text); min-height: 100vh; transition: 0.3s; }
+.sidebar { width: 220px; background: var(--card); padding: 15px; box-shadow: 2px 0 10px rgba(0,0,0,0.05); }
+.logo { width: 80px; height: 80px; border-radius: 12px; display: block; margin: 0 auto 15px; object-fit: cover; }
+.menu-item { padding: 12px; margin-top: 10px; border-radius: 8px; cursor: pointer; }
+.active { background: var(--accent); color: white; }
+.main { flex: 1; padding: 20px; }
+.tarea, .card { background: var(--card); padding: 20px; border-radius: 12px; margin-top: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+
+/* Estilos específicos de gestión */
+.checklist { font-size: 0.85em; background: rgba(0,0,0,0.03); padding: 10px; border-radius: 8px; margin: 10px 0; border-left: 4px solid var(--accent); }
+.cambio { color: #e67e22; font-size: 0.8em; font-weight: bold; display: block; }
+.advertencia { color: #c0392b; font-size: 0.8em; font-weight: bold; }
+.alerta { color: #d35400; font-size: 0.85em; font-style: italic; }
+
+.btn-confirmar { background: #28a745; color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; margin-top: 10px; cursor: pointer; font-weight: bold; }
+
+@media (max-width: 600px) {
+    body { flex-direction: column; }
+    .sidebar { width: 100%; height: auto; flex-direction: row; display: flex; overflow-x: auto; position: sticky; top: 0; z-index: 10; }
+    .sidebar h2 { display: none; }
+}
