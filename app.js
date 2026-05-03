@@ -80,55 +80,69 @@ function comprimirImagen(file){
   });
 }
 
-// 🔥 TOAST BONITO
+// 🔥 TOAST
 function toast(msg,color="#2ecc71"){
   const t=document.createElement("div");
   t.innerText=msg;
   t.style=`
     position:fixed; bottom:20px; right:20px;
     background:${color}; color:white;
-    padding:12px 18px; border-radius:10px;
+    padding:10px 15px; border-radius:10px;
     font-weight:bold; z-index:999;
   `;
   document.body.appendChild(t);
   setTimeout(()=>t.remove(),2500);
 }
 
-// 🔥 VISTA HOY
+// 🔥 HOY
 function renderHoy(){
   initDia();
-  const cont=document.getElementById("mainContent");
-  cont.innerHTML="";
+  const cont = document.getElementById("mainContent");
+  cont.innerHTML = "";
 
-  const dia=getDia();
-  const tareas=data.tareas[dia];
+  const dia = getDia();
+  const tareas = data.tareas[dia];
 
   if(!tareas){
-    cont.innerHTML="<h2>No hay aseo 😎</h2>";
+    cont.innerHTML = "<h2>No hay aseo 😎</h2>";
     return;
   }
 
-  const hora=new Date().getHours();
+  const hora = new Date().getHours();
 
   tareas.forEach((t,i)=>{
     const div=document.createElement("div");
     div.className="tarea";
+
+    let estado = "⏳ Pendiente";
+    if(t.estado==="hecho") estado="✅ Hecho";
+    if(t.aviso) estado="⚠ Avisó";
+
+    if(hora>=16 && t.estado==="pendiente" && !t.aviso){
+      estado="❌ Falta";
+      t.estado="falta";
+
+      if(!data.faltas[t.responsable]) data.faltas[t.responsable]=0;
+      data.faltas[t.responsable]++;
+      guardar();
+    }
 
     div.innerHTML=`
       <h3>${t.nombre}</h3>
 
       <select id="sel_${i}"></select>
 
+      <div><b>${estado}</b></div>
+
       <input type="file" id="file_${i}" multiple accept="image/*">
 
-      <div id="preview_${i}" style="display:flex; gap:5px; margin-top:10px;"></div>
+      <div id="preview_${i}" style="display:flex;gap:5px;margin-top:10px;"></div>
 
-      <button id="btn_${i}" class="btn-confirmar">🚀 Enviar</button>
+      <button id="btn_${i}" class="btn-confirmar">📸 Subir evidencia</button>
     `;
 
     cont.appendChild(div);
 
-    // SELECT
     const sel=document.getElementById("sel_"+i);
     personas.forEach(p=>{
       const op=document.createElement("option");
@@ -143,8 +157,9 @@ function renderHoy(){
       guardar();
     };
 
-    // PREVIEW REAL 🔥
     const input=document.getElementById("file_"+i);
+
+    // 🔥 PREVIEW
     input.onchange=()=>{
       const contPrev=document.getElementById("preview_"+i);
       contPrev.innerHTML="";
@@ -152,41 +167,39 @@ function renderHoy(){
       [...input.files].forEach(file=>{
         const img=document.createElement("img");
         img.src=URL.createObjectURL(file);
-        img.style="width:60px;height:60px;border-radius:8px;object-fit:cover;";
+        img.style="width:60px;height:60px;border-radius:8px;";
         contPrev.appendChild(img);
       });
     };
 
-    // BOTÓN
     const btn=document.getElementById("btn_"+i);
 
     btn.onclick=async()=>{
       if(!input.files.length){
-        return toast("Sube imágenes", "#e74c3c");
+        return toast("Sube una imagen", "#e74c3c");
       }
 
       btn.innerText="⏳ Subiendo...";
       btn.disabled=true;
 
       try{
-        const imgs=[];
-
         for(let file of input.files){
           const img64=await comprimirImagen(file);
-          imgs.push(img64);
+
+          const payload = {
+            dia: dia,
+            tarea: t.nombre,
+            responsable: t.responsable,
+            img: img64
+          };
+
+          fetch(GOOGLE_URL,{
+            method:"POST",
+            mode:"no-cors",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify(payload)
+          });
         }
-
-        const fd=new FormData();
-        fd.append("dia",dia);
-        fd.append("tarea",t.nombre);
-        fd.append("responsable",t.responsable);
-        fd.append("imgs",JSON.stringify(imgs));
-
-        fetch(GOOGLE_URL,{
-          method:"POST",
-          mode:"no-cors",
-          body:fd
-        });
 
         t.estado="hecho";
 
@@ -198,8 +211,8 @@ function renderHoy(){
 
         guardar();
 
-        btn.innerText="✅ Enviado";
-        toast("Subido 🚀");
+        btn.innerText="✅ Subido";
+        toast("Evidencia enviada 🚀");
 
       }catch(e){
         toast("Error","#e74c3c");
