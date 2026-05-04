@@ -117,23 +117,22 @@ function renderHoy(){
       btn.disabled = true;
 
       try {
-
         const imagenes = [];
-
         for (let f of file.files) {
           const base64 = await convertirBase64(f);
           imagenes.push(base64);
         }
 
+        // Cambiamos a text/plain para evitar el error de CORS que bloquea las fotos
         const res = await fetch(GOOGLE_URL, {
           method: "POST",
+          headers: { "Content-Type": "text/plain" }, 
           body: JSON.stringify({
             dia,
             tarea: t.nombre,
             responsable: t.responsable,
             imgs: imagenes
-          }),
-          headers: { "Content-Type": "application/json" }
+          })
         });
 
         const dataRes = await res.json();
@@ -143,6 +142,8 @@ function renderHoy(){
           guardar();
           renderHoy();
           toast("Subido a Drive 🚀","#2ecc71");
+        } else {
+          throw new Error(dataRes.error || "Error en el servidor");
         }
 
       } catch(err){
