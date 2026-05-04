@@ -1,224 +1,334 @@
-const personas = ["Gonza", "Gian", "Mario", "Alexander", "Manu", "Mati", "JP", "Juanito", "Fabi", "Tata"];
-
 const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbx_uOlIFuV3QwTya9dGSTPzBF9kDFmSinrIFxXXgcLyVLGu49ytiGaSvAPvJ8nvzrjn/exec";
 
-const detallesAseo = {
-  "Living comedor y baño": "• Ordenar, barrer y trapear.<br>• Sacar cenizas.<br>• Limpiar baños completos con cloro.",
-  "Sala estudio y baños": "• Ordenar sala.<br>• Barrer y trapear.<br>• Limpiar baños."
-};
+const personas = ["Gonza","Gian","Mario","Alexander","Manu","Mati","JP","Juanito","Fabi","Tata"];
 
 const base = {
-  "Lunes": [{ nombre: "Living comedor y baño", responsable: "Gonza" }, { nombre: "Sala estudio y baños", responsable: "Mati" }],
-  "Martes": [{ nombre: "Living comedor y baño", responsable: "Gian" }, { nombre: "Sala estudio y baños", responsable: "JP" }],
-  "Miércoles": [{ nombre: "Living comedor y baño", responsable: "Mario" }, { nombre: "Sala estudio y baños", responsable: "Juanito" }],
-  "Jueves": [{ nombre: "Living comedor y baño", responsable: "Alexander" }, { nombre: "Sala estudio y baños", responsable: "Fabi" }],
-  "Viernes": [{ nombre: "Living comedor y baño", responsable: "Manu" }, { nombre: "Sala estudio y baños", responsable: "Tata" }]
+  "Lunes":[{nombre:"Living comedor y baño", responsable:"Gonza"}],
+  "Martes":[{nombre:"Sala estudio y baños", responsable:"Gian"}],
+  "Miércoles":[{nombre:"Living comedor y baño", responsable:"Mario"}],
+  "Jueves":[{nombre:"Sala estudio y baños", responsable:"Alexander"}],
+  "Viernes":[{nombre:"Living comedor y baño", responsable:"Manu"}]
 };
 
-let data = JSON.parse(localStorage.getItem("app")) || { tareas: {}, evidencias: [], insumos: [] };
+// 🔥 STORAGE
+let data = JSON.parse(localStorage.getItem("app")) || {};
+data.tareas = data.tareas || {};
+data.historial = data.historial || [];
+data.faltas = data.faltas || [];
 
-function guardar() {
+// 🔁 RESET DIARIO
+const hoyKey = new Date().toDateString();
+if (!data.ultimoDia || data.ultimoDia !== hoyKey) {
+  data.tareas = {};
+  data.ultimoDia = hoyKey;
+  guardar();
+}
+
+function guardar(){
   localStorage.setItem("app", JSON.stringify(data));
 }
 
-// 🔥 TOAST
-function toast(msg, color = "#2ecc71") {
-  const t = document.createElement("div");
-  t.innerText = msg;
-  t.style = `
-    position:fixed; bottom:20px; right:20px;
-    background:${color}; color:white;
-    padding:12px 18px; border-radius:10px;
-    z-index:999; font-weight:bold;
-  `;
+function toast(msg, color="#000"){
+  const t=document.createElement("div");
+  t.innerText=msg;
+  t.style=`position:fixed;bottom:20px;right:20px;background:${color};color:#fff;padding:10px;border-radius:10px;z-index:999`;
   document.body.appendChild(t);
-  setTimeout(() => t.remove(), 3000);
+  setTimeout(()=>t.remove(),2000);
 }
 
-// 🔥 COMPRESIÓN
-async function comprimirImagen(file) {
-  return new Promise((resolve) => {
+function hoyNombre(){
+  return ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"][new Date().getDay()];
+}
+
+// 🔄 base64
+function convertirBase64(file){
+  return new Promise((res)=>{
     const reader = new FileReader();
     reader.readAsDataURL(file);
-
-    reader.onload = (e) => {
-      const img = new Image();
-      img.src = e.target.result;
-
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
-
-        const size = 400;
-        canvas.width = size;
-        canvas.height = (img.height * size) / img.width;
-
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-        resolve(canvas.toDataURL("image/jpeg", 0.4).split(",")[1]);
-      };
-    };
+    reader.onload = () => res(reader.result.split(",")[1]);
   });
 }
 
-// 🔥 PREVIEW (SOLO NOMBRES)
-function previewImagen(input, id) {
-  const cont = document.getElementById("preview_" + id);
+// 🏠 HOY
+function renderHoy(){
+  const dia = hoyNombre();
+  const cont = document.getElementById("contenido");
+  document.getElementById("titulo").innerText = "Hoy ("+dia+")";
   cont.innerHTML = "";
 
-  [...input.files].forEach(file => {
-    const div = document.createElement("div");
-    div.textContent = "📎 " + file.name;
-    div.style = "font-size: 14px; margin-top: 5px;";
-    cont.appendChild(div);
-  });
-}
-
-// 🔥 HOY
-function renderHoy() {
-  const dias = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-  const diaNombre = dias[new Date().getDay()];
-  const cont = document.getElementById("mainContent");
-
-  document.getElementById("titulo").innerText = "Hoy (" + diaNombre + ")";
-  cont.innerHTML = "";
-
-  if (!base[diaNombre]) {
-    cont.innerHTML = "<div class='card'>No hay tareas 😎</div>";
+  if(!base[dia]){
+    cont.innerHTML = "<div class='card'>Sin tareas 😎</div>";
     return;
   }
 
-  // 🔧 FIX IMPORTANTE (NO BORRAR DATOS)
-  if (!data.tareas[diaNombre]) {
-    data.tareas[diaNombre] = base[diaNombre].map(t => ({ ...t, estado: "pendiente" }));
+  if(!data.tareas[dia]){
+    data.tareas[dia] = base[dia].map(t => ({...t, estado:"pendiente"}));
     guardar();
   }
 
-  data.tareas[diaNombre].forEach((t, i) => {
-    const div = document.createElement("div");
-    div.className = "tarea";
+  data.tareas[dia].forEach((t,i)=>{
 
-    div.innerHTML = `
+    const div=document.createElement("div");
+    div.className="card";
+
+    div.innerHTML=`
       <h3>${t.nombre}</h3>
-      <div class="checklist">${detallesAseo[t.nombre]}</div>
-
       <select id="sel_${i}"></select>
-
-      <input type="file" id="f_${i}" accept="image/*" multiple>
-
-      <div id="preview_${i}" style="margin-top:10px;"></div>
-
-      <button id="btn_${i}" class="btn-confirmar"></button>
+      <input type="file" id="file_${i}" multiple>
+      <div id="preview_${i}"></div>
+      <button id="btn_${i}">
+        ${t.estado==='hecho'?'✅ Listo':'🚀 Enviar'}
+      </button>
     `;
 
     cont.appendChild(div);
 
-    const select = document.getElementById("sel_" + i);
-
-    personas.forEach(p => {
-      const op = document.createElement("option");
-      op.value = p;
-      op.text = p;
-      if (p === t.responsable) op.selected = true;
-      select.appendChild(op);
+    const sel=document.getElementById("sel_"+i);
+    personas.forEach(p=>{
+      const op=document.createElement("option");
+      op.value=p;
+      op.text=p;
+      if(p===t.responsable) op.selected=true;
+      sel.appendChild(op);
     });
 
-    select.onchange = () => {
-      t.responsable = select.value;
-      guardar();
+    sel.onchange=()=>{ t.responsable=sel.value; guardar(); };
+
+    const file=document.getElementById("file_"+i);
+    file.onchange=()=>{
+      const prev=document.getElementById("preview_"+i);
+      prev.innerHTML="";
+      [...file.files].forEach(f=>{
+        const img=document.createElement("img");
+        img.className="preview";
+        img.src=URL.createObjectURL(f);
+        prev.appendChild(img);
+      });
     };
 
-    const fileInput = document.getElementById("f_" + i);
-    fileInput.onchange = () => previewImagen(fileInput, i);
+    document.getElementById("btn_"+i).onclick = async () => {
 
-    const btn = document.getElementById("btn_" + i);
-
-    btn.innerText = t.estado === "hecho" ? "✅ Enviado" : "🚀 Enviar";
-
-    btn.onclick = async () => {
-      if (!fileInput.files.length) {
-        return toast("Sube al menos una imagen", "#e74c3c");
+      if(!file.files.length){
+        return toast("Sube al menos una imagen","#e74c3c");
       }
 
+      const btn = document.getElementById("btn_"+i);
       btn.innerText = "⏳ Subiendo...";
       btn.disabled = true;
 
       try {
+
         const imagenes = [];
 
-        for (let file of fileInput.files) {
-          const img64 = await comprimirImagen(file);
-          imagenes.push(img64);
+        for (let f of file.files) {
+          const base64 = await convertirBase64(f);
+          imagenes.push(base64);
         }
 
-        const fd = new FormData();
-        fd.append("dia", diaNombre);
-        fd.append("tarea", t.nombre);
-        fd.append("responsable", t.responsable);
-        fd.append("imgs", JSON.stringify(imagenes));
-
-        fetch(GOOGLE_URL, {
+        const res = await fetch(GOOGLE_URL, {
           method: "POST",
-          mode: "no-cors",
-          body: fd
+          body: JSON.stringify({
+            dia,
+            tarea: t.nombre,
+            responsable: t.responsable,
+            imgs: imagenes
+          }),
+          headers: { "Content-Type": "application/json" }
         });
 
-        t.estado = "hecho";
+        const dataRes = await res.json();
 
-        data.evidencias.unshift({
-          tarea: t.nombre,
-          responsable: t.responsable,
-          fecha: new Date().toLocaleString()
-        });
+        if(dataRes.ok){
+          t.estado="hecho";
+          guardar();
+          renderHoy();
+          toast("Subido a Drive 🚀","#2ecc71");
+        }
 
-        guardar();
-
-        btn.innerText = "✅ Enviado";
-        toast("Evidencias subidas 🚀");
-
-      } catch (err) {
+      } catch(err){
         console.error(err);
-        toast("Error al subir", "#e74c3c");
-        btn.disabled = false;
-        btn.innerText = "Reintentar";
+        toast("Error al subir","#e74c3c");
+        btn.disabled=false;
+        btn.innerText="Reintentar";
       }
     };
   });
 }
 
-// 🔥 REGISTRO
-function renderRegistro() {
-  const cont = document.getElementById("mainContent");
-  document.getElementById("titulo").innerText = "Registro";
+// 📸 HISTORIAL
+function renderHistorial(){
+  const cont=document.getElementById("contenido");
+  document.getElementById("titulo").innerText="Historial";
+  cont.innerHTML="";
 
-  cont.innerHTML = "";
-
-  data.evidencias.slice(0, 20).forEach(e => {
-    const d = document.createElement("div");
-    d.className = "card";
-    d.innerHTML = `
-      <b>${e.tarea}</b><br>
-      ${e.responsable}<br>
-      <small>${e.fecha}</small>
+  data.historial.forEach(h=>{
+    const d=document.createElement("div");
+    d.className="card";
+    d.innerHTML=`
+      <b>${h.tarea}</b><br>
+      ${h.responsable}<br>
+      <small>${h.fecha}</small>
     `;
     cont.appendChild(d);
   });
 }
 
-// 🔥 VISTAS
-function cargarVista(v, el) {
-  document.querySelectorAll(".menu-item").forEach(i => i.classList.remove("active"));
-  if (el) el.classList.add("active");
+// 🔐 ADMIN
+function abrirAdmin(){
 
-  if (v === "hoy") renderHoy();
-  if (v === "evidencias") renderRegistro();
+  const modal=document.createElement("div");
+  modal.className="modal";
+
+  modal.innerHTML=`
+    <div class="modal-box">
+      <h3>Admin</h3>
+      <input type="password" id="pass" placeholder="Contraseña">
+      <button id="btnLogin">Entrar</button>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  document.getElementById("btnLogin").onclick = ()=>{
+    const pass=document.getElementById("pass").value;
+
+    if(pass==="casafenix.cco"){
+      modal.remove();
+      renderAdmin();
+    }else{
+      toast("Incorrecta","#e74c3c");
+    }
+  };
+}
+
+// 🔧 ADMIN
+function renderAdmin(){
+  const cont=document.getElementById("contenido");
+  document.getElementById("titulo").innerText="Admin";
+
+  cont.innerHTML=`
+    <h3>Agregar falta</h3>
+    <select id="personaFalta"></select>
+    <input id="motivo" placeholder="Motivo">
+    <input id="obs" placeholder="Observación">
+    <button id="btnFalta">Guardar falta</button>
+
+    <h3>Faltas</h3>
+    <div id="listaFaltas"></div>
+  `;
+
+  personas.forEach(p=>{
+    const op=document.createElement("option");
+    op.value=p;
+    op.text=p;
+    document.getElementById("personaFalta").appendChild(op);
+  });
+
+  document.getElementById("btnFalta").onclick = guardarFalta;
+
+  renderFaltas();
+}
+
+// 🔴 FALTAS
+async function guardarFalta() {
+  const persona = document.getElementById("personaFalta").value;
+  const motivo = document.getElementById("motivo").value;
+  const obs = document.getElementById("obs").value;
+  const btn = document.getElementById("btnFalta");
+
+  if (!motivo) return toast("Escribe motivo", "#e74c3c");
+
+  // Bloquear botón y mostrar carga
+  btn.innerText = "⏳ Guardando...";
+  btn.disabled = true;
+
+  try {
+    // Usamos mode: 'no-cors' y Content-Type: 'text/plain' para saltar restricciones de navegador
+    await fetch(GOOGLE_URL, {
+      method: "POST",
+      mode: "no-cors", 
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({
+        tipo: "falta",
+        persona,
+        motivo,
+        obs
+      })
+    });
+
+    // Como usamos 'no-cors', el navegador no nos deja leer la respuesta (dataRes.ok),
+    // pero si el fetch no lanza error, asumimos que se envió correctamente.
+    data.faltas.unshift({
+      persona,
+      motivo,
+      obs,
+      fecha: new Date().toLocaleString()
+    });
+
+    guardar();
+    renderFaltas();
+
+    // Limpiar formulario
+    document.getElementById("motivo").value = "";
+    document.getElementById("obs").value = "";
+    toast("Falta enviada 📄", "#2ecc71");
+
+  } catch (err) {
+    console.error("Error de red:", err);
+    toast("Error de conexión", "#e74c3c");
+  } finally {
+    // Restaurar botón
+    btn.innerText = "Guardar falta";
+    btn.disabled = false;
+  }
+}
+// 📋 FALTAS
+function renderFaltas(){
+  const cont=document.getElementById("listaFaltas");
+  cont.innerHTML="";
+
+  data.faltas.forEach((f,i)=>{
+    const d=document.createElement("div");
+    d.className="card";
+
+    d.innerHTML=`
+      <b>${f.persona}</b><br>
+      ${f.motivo}<br>
+      ${f.obs||""}<br>
+      <small>${f.fecha}</small>
+      <button onclick="eliminarFalta(${i})">❌</button>
+    `;
+
+    cont.appendChild(d);
+  });
+}
+
+function eliminarFalta(i){
+  if(confirm("Eliminar?")){
+    data.faltas.splice(i,1);
+    guardar();
+    renderFaltas();
+  }
+}
+
+// 🌗 TEMA
+function toggleTema(){
+  document.body.classList.toggle("dark");
+}
+
+// 📱 NAV
+function cargarVista(v){
+  if(v==="hoy") renderHoy();
+  if(v==="historial") renderHistorial();
 }
 
 // 🔥 INIT
-window.onload = () => {
-  cargarVista("hoy");
+document.addEventListener("DOMContentLoaded", () => {
 
-  setInterval(() => {
-    document.getElementById("hora").innerText = new Date().toLocaleTimeString();
-  }, 1000);
-};
+  document.getElementById("navHoy").onclick = ()=>cargarVista("hoy");
+  document.getElementById("navHistorial").onclick = ()=>cargarVista("historial");
+  document.getElementById("navTema").onclick = toggleTema;
+  document.getElementById("navAdmin").onclick = abrirAdmin;
+
+  renderHoy();
+});
