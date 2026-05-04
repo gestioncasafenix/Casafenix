@@ -3,11 +3,26 @@ const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbx_uOlIFuV3QwTya9dGS
 const personas = ["Gonza","Gian","Mario","Alexander","Manu","Mati","JP","Juanito","Fabi","Tata"];
 
 const base = {
-  "Lunes":[{nombre:"Living comedor y baño", responsable:"Gonza"}],
-  "Martes":[{nombre:"Sala estudio y baños", responsable:"Gian"}],
-  "Miércoles":[{nombre:"Living comedor y baño", responsable:"Mario"}],
-  "Jueves":[{nombre:"Sala estudio y baños", responsable:"Alexander"}],
-  "Viernes":[{nombre:"Living comedor y baño", responsable:"Manu"}]
+  "Lunes": [
+    { nombre: "Living comedor y baño", responsable: "Gonza" },
+    { nombre: "Sala estudio y baños", responsable: "Mati" }
+  ],
+  "Martes": [
+    { nombre: "Living comedor y baño", responsable: "Manu" },
+    { nombre: "Sala estudio y baños", responsable: "JP" }
+  ],
+  "Miércoles": [
+    { nombre: "Living comedor y baño", responsable: "Mario" },
+    { nombre: "Sala estudio y baños", responsable: "Juanito" }
+  ],
+  "Jueves": [
+    { nombre: "Living comedor y baño", responsable: "Alexander" },
+    { nombre: "Sala estudio y baños", responsable: "Fabi" }
+  ],
+  "Viernes": [
+    { nombre: "Living comedor y baño", responsable: "Manu" },
+    { nombre: "Sala estudio y baños", responsable: "Tata" }
+  ]
 };
 
 // 🔥 STORAGE
