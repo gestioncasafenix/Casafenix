@@ -76,10 +76,13 @@ function renderHoy(){
     return;
   }
 
-  if(!data.tareas[dia]){
-    data.tareas[dia] = base[dia].map(t => ({...t, estado:"pendiente"}));
-    guardar();
-  }
+if(
+  !data.tareas[dia] ||
+  data.tareas[dia].length !== base[dia].length
+){
+  data.tareas[dia] = base[dia].map(t => ({...t, estado:"pendiente"}));
+  guardar();
+}
 
   data.tareas[dia].forEach((t,i)=>{
 
