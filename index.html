@@ -1,50 +1,30 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Casa Fénix</title>
-
-<!-- Enlace al Manifest -->
-<link rel="manifest" href="manifest.json">
-
-<!-- Estilos -->
-<link rel="stylesheet" href="style.css">
-
-<!-- Iconos para Android/Chrome -->
-<link rel="icon" href="logo.png">
-<meta name="theme-color" content="#6C9EFF">
-
-<!-- Iconos para iPhone/Safari (Apple Touch Icon) -->
-<link rel="apple-touch-icon" href="logo.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-</head></head>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Casa Fénix</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    <meta name="theme-color" content="#6C9EFF">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+</head>
 <body>
-
-<div class="app">
-
-  <div class="header">
-    <img src="logo.png" class="logo">
-    <h1 id="titulo">Hoy</h1>
-  </div>
-
-  <div id="contenido"></div>
-
-  <div class="nav">
-    <div class="nav-item" id="navHoy">🏠</div>
-    <div class="nav-item" id="navHistorial">📸</div>
-    <div class="nav-item" id="navTema">🌓</div>
-    <div class="nav-item" id="navAdmin">🔐</div>
-  </div>
-
-</div>
-
-<script src="app.js"></script>
+    <div class="app">
+        <div class="header">
+            <img src="logo.png" class="logo">
+            <h1 id="titulo" style="font-size: 20px; margin: 0;">Hoy</h1>
+        </div>
+        <div id="contenido"></div>
+        <div class="nav">
+            <div class="nav-item" id="navHoy">🏠</div>
+            <div class="nav-item" id="navHistorial">📸</div>
+            <div class="nav-item" id="navTema">🌓</div>
+            <div class="nav-item" id="navAdmin">🔐</div>
+        </div>
+    </div>
+    <script src="app.js"></script>
 </body>
 </html>
