@@ -66,6 +66,8 @@ function convertirBase64(file){
 
 // 🏠 HOY
 function renderHoy(){
+  // Añade esto solo una vez para limpiar la memoria vieja
+localStorage.removeItem("app");
   const dia = hoyNombre();
   const cont = document.getElementById("contenido");
   document.getElementById("titulo").innerText = "Hoy ("+dia+")";
