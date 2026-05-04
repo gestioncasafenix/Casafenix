@@ -193,16 +193,18 @@ function renderHistorial(){
 }
 
 // 🔐 ADMIN
+// 🔐 ADMIN
 function abrirAdmin(){
-
   const modal=document.createElement("div");
   modal.className="modal";
 
+  // Se añade el botón de Cancelar
   modal.innerHTML=`
     <div class="modal-box">
       <h3>Admin</h3>
       <input type="password" id="pass" placeholder="Contraseña">
       <button id="btnLogin">Entrar</button>
+      <button id="btnCerrarModal" style="background:#e74c3c; margin-top:5px;">Cancelar</button>
     </div>
   `;
 
@@ -210,7 +212,6 @@ function abrirAdmin(){
 
   document.getElementById("btnLogin").onclick = ()=>{
     const pass=document.getElementById("pass").value;
-
     if(pass==="casafenix.cco"){
       modal.remove();
       renderAdmin();
@@ -218,6 +219,9 @@ function abrirAdmin(){
       toast("Incorrecta","#e74c3c");
     }
   };
+
+  // Acción para cerrar el modal sin poner clave
+  document.getElementById("btnCerrarModal").onclick = () => modal.remove();
 }
 
 // 🔧 ADMIN
@@ -225,7 +229,10 @@ function renderAdmin(){
   const cont=document.getElementById("contenido");
   document.getElementById("titulo").innerText="Admin";
 
+  // Se añade el botón de Volver al Inicio
   cont.innerHTML=`
+    <button id="btnVolverAdmin" style="background:#6c757d; margin-bottom:20px;">⬅ Volver a Inicio</button>
+
     <h3>Agregar falta</h3>
     <select id="personaFalta"></select>
     <input id="motivo" placeholder="Motivo">
@@ -236,6 +243,9 @@ function renderAdmin(){
     <div id="listaFaltas"></div>
   `;
 
+  // Acción para regresar a la vista de tareas
+  document.getElementById("btnVolverAdmin").onclick = () => renderHoy();
+
   personas.forEach(p=>{
     const op=document.createElement("option");
     op.value=p;
@@ -244,10 +254,8 @@ function renderAdmin(){
   });
 
   document.getElementById("btnFalta").onclick = guardarFalta;
-
   renderFaltas();
 }
-
 // 🔴 FALTAS
 async function guardarFalta() {
   const persona = document.getElementById("personaFalta").value;
